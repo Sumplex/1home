@@ -430,9 +430,9 @@ function ListingCard({ listing, onSelect, wishlist, onWish }) {
 /* ════════════════════════════════════════════
    BOOKING WIDGET
 ════════════════════════════════════════════ */
-function BookingWidget({ listing, user, onBook, onLoginNeeded }) {
-  const [checkIn,setCheckIn]=useState("");
-  const [checkOut,setCheckOut]=useState("");
+function BookingWidget({ listing, user, onBook, onLoginNeeded, heroCheckIn="", heroCheckOut="" }) {
+  const [checkIn,setCheckIn]=useState(heroCheckIn);
+  const [checkOut,setCheckOut]=useState(heroCheckOut);
   const [guests,setGuests]=useState(1);
   const [done,setDone]=useState(false);
   const nights=checkIn&&checkOut?Math.max(0,Math.round((new Date(checkOut)-new Date(checkIn))/86400000)):0;
@@ -471,14 +471,20 @@ function BookingWidget({ listing, user, onBook, onLoginNeeded }) {
         <div style={{padding:"11px 14px"}}>
           <div style={labelSt}>Gäste</div>
           <select value={guests} onChange={e=>setGuests(Number(e.target.value))} style={{border:"none",outline:"none",fontFamily:F.sans,fontSize:13,color:C.ink,width:"100%",background:"transparent"}}>
-            {Array.from({length:listing.guests||4},(_,i)=>i+1).map(n=><option key={n} value={n}>{n} Gast{n>1?"¨e":""}</option>)}
+            {Array.from({length:listing.guests||4},(_,i)=>i+1).map(n=><option key={n} value={n}>{n===1?"1 Gast":n+" Gäste"}s</option>)}
           </select>
         </div>
       </div>
-      <button onClick={()=>{if(!user)return onLoginNeeded();if(nights>0){onBook({listingId:listing.id,guestId:user.id,guestName:user.name,checkIn,checkOut,guests,total:sub+fee});setDone(true);}}}
-        style={{...btnPrimary,width:"100%",padding:"14px",fontSize:15,borderRadius:12,opacity:nights>0?1:0.55,marginBottom:12}}>
-        {!user?"🔐 Anmelden zum Buchen":nights>0?`Jetzt buchen — ${nights} Nacht${nights>1?"¨e":""}`:"Datum auswählen"}
-      </button>
+      {user?.id === listing.hostId ? (
+        <div style={{background:"#FEF3C7",border:"1px solid #FDE68A",borderRadius:10,padding:"12px 14px",textAlign:"center",fontFamily:F.sans,fontSize:13,color:"#92600A",marginBottom:12}}>
+          Du kannst deine eigene Unterkunft nicht buchen.
+        </div>
+      ) : (
+        <button onClick={()=>{if(!user)return onLoginNeeded();if(nights>0){onBook({listingId:listing.id,guestId:user.id,guestName:user.name,checkIn,checkOut,guests,total:sub+fee});setDone(true);}}}
+          style={{...btnPrimary,width:"100%",padding:"14px",fontSize:15,borderRadius:12,opacity:nights>0?1:0.55,marginBottom:12}}>
+          {!user?"🔐 Anmelden zum Buchen":nights>0?`Jetzt buchen — ${nights} ${nights===1?"Nacht":"Nächte"}`:"Datum auswählen"}
+        </button>
+      )}
       {nights>0 && (
         <div style={{fontFamily:F.sans,fontSize:14}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,color:C.inkMid}}><span>€{listing.price} × {nights} Nächte</span><span>€{sub}</span></div>
@@ -498,7 +504,7 @@ function BookingWidget({ listing, user, onBook, onLoginNeeded }) {
 /* ════════════════════════════════════════════
    DETAIL VIEW
 ════════════════════════════════════════════ */
-function DetailView({ listing, user, wishlist, onWish, onBook, onBack, onLoginNeeded }) {
+function DetailView({ listing, user, wishlist, onWish, onBook, onBack, onLoginNeeded, heroCheckIn="", heroCheckOut="" }) {
   return (
     <div style={{maxWidth:1020,margin:"0 auto",padding:"0 24px 80px"}}>
       <button onClick={onBack} style={{...btnGhost,display:"flex",alignItems:"center",gap:6,padding:"20px 0",fontSize:14,fontWeight:600,color:C.forest}}>
@@ -543,7 +549,7 @@ function DetailView({ listing, user, wishlist, onWish, onBook, onBack, onLoginNe
           </div>
         </div>
         <div style={{position:"sticky",top:24,border:`1.5px solid ${C.border}`,borderRadius:20,padding:24,boxShadow:"0 8px 32px rgba(28,43,30,0.1)",background:"white"}}>
-          <BookingWidget listing={listing} user={user} onBook={onBook} onLoginNeeded={onLoginNeeded}/>
+          <BookingWidget listing={listing} user={user} onBook={onBook} onLoginNeeded={onLoginNeeded} heroCheckIn={heroCheckIn} heroCheckOut={heroCheckOut}/>
         </div>
       </div>
     </div>
@@ -741,7 +747,7 @@ function GuestTrips({ user, bookings, listings }) {
             <div style={{flex:1}}>
               <div style={{fontFamily:F.serif,fontSize:20,color:C.forest,marginBottom:3}}>{l?.title}</div>
               <div style={{fontFamily:F.sans,fontSize:13,color:C.inkLt}}>📍 {l?.location}</div>
-              <div style={{fontFamily:F.sans,fontSize:13,color:C.inkLt}}>{b.checkIn} – {b.checkOut} · {b.guests} Gast{b.guests>1?"¨e":""}</div>
+              <div style={{fontFamily:F.sans,fontSize:13,color:C.inkLt}}>{b.checkIn} – {b.checkOut} · {b.guests} Gast{b.guests>1?"e":""}</div>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontFamily:F.serif,fontSize:22,color:C.forest,marginBottom:4}}>€{b.total}</div>
@@ -760,23 +766,44 @@ function GuestTrips({ user, bookings, listings }) {
    ROOT APP
 ════════════════════════════════════════════ */
 export default function App() {
-  const [user,setUser]=useState(null);
-  const [showAuth,setShowAuth]=useState(false);
-  const [showProf,setShowProf]=useState(false);
-  const [view,setView]=useState("browse");
-  const [selected,setSelected]=useState(null);
-  const [wishlist,setWishlist]=useState(new Set());
-  const [search,setSearch]=useState("");
-  const [checkIn,setCheckIn]=useState("");
-  const [checkOut,setCheckOut]=useState("");
-  const [category,setCategory]=useState("Alle");
-  const [listings,setListings]=useState(INIT_LISTINGS);
-  const [bookings,setBookings]=useState(INIT_BOOKINGS);
+  // ── localStorage helpers ──
+  const load = (key, fallback) => {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+  };
+  const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} };
+
+  const [user,      _setUser]     = useState(() => load("1h_user", null));
+  const [showAuth,  setShowAuth]  = useState(false);
+  const [showProf,  setShowProf]  = useState(false);
+  const [view,      setView]      = useState("browse");
+  const [selected,  setSelected]  = useState(null);
+  const [wishlist,  _setWishlist] = useState(() => new Set(load("1h_wishlist", [])));
+  const [search,    setSearch]    = useState("");
+  const [checkIn,   setCheckIn]   = useState("");
+  const [checkOut,  setCheckOut]  = useState("");
+  const [category,  setCategory]  = useState("Alle");
+  const [listings,  _setListings] = useState(() => load("1h_listings", INIT_LISTINGS));
+  const [bookings,  _setBookings] = useState(() => load("1h_bookings", INIT_BOOKINGS));
+
+  // persisted setters
+  const setUser      = v => { _setUser(v);      save("1h_user", v); };
+  const setWishlist  = fn => { _setWishlist(prev => { const next = fn(prev); save("1h_wishlist", [...next]); return next; }); };
+  const setListings  = fn => { _setListings(prev => { const next = typeof fn==="function" ? fn(prev) : fn; save("1h_listings", next); return next; }); };
+  const setBookings  = fn => { _setBookings(prev => { const next = typeof fn==="function" ? fn(prev) : fn; save("1h_bookings", next); return next; }); };
 
   const toggleWish = id=>setWishlist(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
   const handleLogin  = u =>{ setUser(u); setShowAuth(false); };
-  const handleLogout = ()=>{ setUser(null); setView("browse"); setShowProf(false); };
-  const handleBook   = b =>setBookings(p=>[...p,{...b,id:uid(),status:"confirmed"}]);
+  const handleLogout = ()=>{ setUser(null); setView("browse"); setShowProf(false); try { localStorage.removeItem("1h_user"); } catch {} };
+  const handleBook = b => {
+    // prevent duplicate bookings for same listing + overlapping dates
+    const overlap = bookings.some(x =>
+      x.listingId === b.listingId &&
+      x.guestId   === b.guestId  &&
+      x.checkIn   === b.checkIn  &&
+      x.checkOut  === b.checkOut
+    );
+    if (!overlap) setBookings(p => [...p, { ...b, id:uid(), status:"confirmed" }]);
+  };
   const handleAdd    = l =>setListings(p=>[...p,l]);
   const handleUpdate = (id,d)=>setListings(p=>p.map(l=>l.id===id?{...l,...d}:l));
   const handleDelete = id=>setListings(p=>p.filter(l=>l.id!==id));
@@ -842,7 +869,7 @@ export default function App() {
 
       {/* PAGES */}
       {selected?(
-        <DetailView listing={selected} user={user} wishlist={wishlist} onWish={toggleWish} onBook={handleBook} onBack={()=>setSelected(null)} onLoginNeeded={()=>setShowAuth(true)}/>
+        <DetailView listing={selected} user={user} wishlist={wishlist} onWish={toggleWish} onBook={handleBook} onBack={()=>setSelected(null)} onLoginNeeded={()=>setShowAuth(true)} heroCheckIn={checkIn} heroCheckOut={checkOut}/>
       ):view==="dashboard"&&user?.role==="host"?(
         <HostDashboard user={user} listings={listings} bookings={bookings} onAdd={handleAdd} onUpdate={handleUpdate} onDelete={handleDelete} onToggleActive={handleToggle}/>
       ):view==="trips"&&user?.role==="guest"?(
@@ -855,7 +882,7 @@ export default function App() {
           <div style={{background:"white",borderBottom:`1px solid ${C.border}`,position:"sticky",top:62,zIndex:80}}>
             <div style={{maxWidth:1200,margin:"0 auto",padding:"0 24px",display:"flex",gap:6,overflowX:"auto",height:54,alignItems:"center"}}>
               {CATEGORIES.map(cat=>(
-                <button key={cat.id} onClick={()=>setCategory(cat.id)}
+                <button key={cat.id} onClick={()=>{setCategory(cat.id);if(view==="wishlist")setView("browse");}}
                   style={{display:"flex",alignItems:"center",gap:6,padding:"6px 16px",borderRadius:20,border:`1.5px solid ${category===cat.id?C.forest:C.border}`,background:category===cat.id?C.forest:"white",color:category===cat.id?"white":C.inkLt,fontFamily:F.sans,fontSize:13,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",transition:"all 0.15s",flexShrink:0}}>
                   {cat.icon} {cat.label}
                 </button>
