@@ -918,8 +918,8 @@ export default function App() {
 
           {/* Footer */}
           <footer style={{background:C.forest,color:C.sageLt,padding:"32px 24px",textAlign:"center"}}>
-            <div style={{fontFamily:F.serif,fontSize:20,color:"white",fontStyle:"italic",marginBottom:6}}>1home</div>
-            <div style={{fontFamily:F.sans,fontSize:12}}>© {new Date().getFullYear()} 1home. Alle Rechte vorbehalten.</div>
+            <div style={{fontFamily:F.serif,fontSize:20,color:"white",fontStyle:"italic",marginBottom:6}}>at-home.immo</div>
+            <div style={{fontFamily:F.sans,fontSize:12}}>© {new Date().getFullYear()} at-home.immo. Alle Rechte vorbehalten.</div>
           </footer>
         </>
       )}
