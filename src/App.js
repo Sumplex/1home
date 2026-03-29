@@ -830,8 +830,8 @@ export default function App() {
       <nav style={{background:C.forest,position:"sticky",top:0,zIndex:90,boxShadow:"0 2px 20px rgba(0,0,0,0.35)"}}>
         <div style={{maxWidth:1200,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",height:62,gap:12,justifyContent:"space-between"}}>
           <button onClick={()=>{setView("browse");setSelected(null);}} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            <div style={{width:32,height:32,background:`linear-gradient(135deg,${C.gold},${C.goldLt})`,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.serif,fontSize:16,color:C.forest,fontWeight:700}}>1</div>
-            <span style={{fontFamily:F.serif,fontSize:22,color:"white",fontStyle:"italic",letterSpacing:-0.3}}>home</span>
+            <div style={{width:32,height:32,background:`linear-gradient(135deg,${C.gold},${C.goldLt})`,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.serif,fontSize:16,color:C.forest,fontWeight:700}}>@</div>
+            <span style={{fontFamily:F.serif,fontSize:22,color:"white",fontStyle:"italic",letterSpacing:-0.3}}>at-home.immo</span>
           </button>
           <div style={{display:"flex",gap:4}}>{navBtn("browse","Entdecken")}</div>
           <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
